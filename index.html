@@ -7,6 +7,19 @@
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
         <link rel="stylesheet" href="css/leaflet.css">
+		<style>
+  /* completely remove the tooltip arrow */
+  .leaflet-tooltip:before,
+  .leaflet-tooltip-tip {
+    display: none !important;
+    content: none !important;
+    border: none !important;
+  }
+  /* now the tooltip box will be flush—tweak its padding if needed */
+  .leaflet-tooltip {
+    padding: 2px 4px !important;
+  }
+</style>
         <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
         <link rel="stylesheet" href="css/qgis2web.css">
         <link rel="stylesheet" href="css/fontawesome-all.min.css">
@@ -20,98 +33,39 @@
         </style>
         <title></title>
     <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
-
 <style>
-  body, html {
+  /* — reset & map container — */
+  html, body, #map {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  body {
     font-family: 'Lato', sans-serif;
   }
 
+  /* — sidebar wrapper — */
   #leftSidebar {
     position: fixed;
     top: 0;
     left: 0;
-    width: 300px;
-    height: 100%;
-    background: white;
-    box-shadow: 2px 0 6px rgba(0,0,0,0.2);
-    padding: 10px;
-    z-index: 1000;
-    transition: transform 0.3s ease;
-  }
-
-  #leftSidebar.collapsed {
-    transform: translateX(-100%);
-  }
-
-  #sidebarToggleBtn {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    z-index: 1100;
-    background: #fff;
-    border: 1px solid #ccc;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-  }
-
-  .tabs {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 50px;
-  }
-
-  .tab-button {
-    background: #f4f4f4;
-    border: 1px solid #ccc;
-    padding: 5px 10px;
-    cursor: pointer;
-    font-size: 14px;
-  }
-
-  .tab-button.active {
-    background: #ccc;
-    font-weight: bold;
-  }
-
-  .tab-content {
-    display: none;
-    margin-top: 10px;
-  }
-
-  .tab-content.active {
-    display: block;
-  }
-</style>
-
-
-<style>
-  body, html {
-    font-family: 'Lato', sans-serif;
-  }
-
-  #leftSidebar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 340px;
-    height: 100%;
+    width: 390px;
+    height: 95vh;
     background: #ffffff;
     border-right: 1px solid #ddd;
     box-shadow: 4px 0 8px rgba(0,0,0,0.08);
-    padding: 24px 20px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 20px;
+    overflow: hidden;           /* hide outer scrollbar */
     z-index: 1000;
-    transition: transform 0.3s ease;
-    border-top-right-radius: 12px;
-    border-bottom-right-radius: 12px;
-    overflow-y: auto;
   }
-
   #leftSidebar.collapsed {
     transform: translateX(-100%);
   }
 
+  /* — sidebar toggle button — */
   #sidebarToggleBtn {
     position: fixed;
     top: 15px;
@@ -124,21 +78,20 @@
     border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
     transition: background 0.3s;
   }
-
   #sidebarToggleBtn:hover {
     background: #f0f0f0;
   }
 
+  /* — tabs header row — */
   .tabs {
     display: flex;
-    justify-content: space-between;
-    margin-top: 40px;
     gap: 8px;
+    margin-top: 0px;
+    flex: 0 0 auto;            /* fixed height */
   }
-
   .tab-button {
     flex: 1;
     background: #f2f2f2;
@@ -147,49 +100,47 @@
     border-radius: 18px;
     font-size: 14px;
     cursor: pointer;
-    transition: background 0.3s ease;
-    color: #444;
+    transition: background 0.3s;
   }
-
   .tab-button.active {
     background: #ffd700;
-    color: #000000;
     font-weight: bold;
   }
 
   .tab-content {
-    display: none;
-    margin-top: 20px;
-  }
+  flex: 1 1 auto;           /* fill remaining height */
+  overflow-y: auto;         /* or use scroll to always show the bar */
+  display: none;
+  margin-top: 0;
+  padding-right: 12px;      /* give room so the scrollbar won’t overlap your text */
+  box-sizing: content-box;  /* ensure padding doesn’t shrink your text area */
+}
+.tab-content.active {
+  display: block;
+}
 
-  .tab-content.active {
-    display: block;
-  }
-
+  /* — typography inside tabs — */
   .tab-content h3 {
-    color: #222;
     font-size: 18px;
     margin-bottom: 10px;
     border-bottom: 1px solid #ccc;
     padding-bottom: 5px;
   }
-
-  .tab-content p {
-    margin-bottom: 12px;
-    color: #333;
-    line-height: 1.6;
+  .tab-content p,
+  .tab-content ul,
+  .tab-content li {
     text-align: justify;
+    line-height: 1.6;
+    margin-bottom: 12px;
   }
-
   .tab-content img {
     max-width: 100%;
     height: auto;
-    display: block;
     margin: 15px auto;
     border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
   }
 </style>
-
 
 </head>
     <body>
@@ -266,193 +217,110 @@
         <script src="js/labelgun.min.js"></script>
         <script src="js/labels.js"></script>
        <script src="js/labels.js"></script>
-        <script src="data/MunicipalUnitsPoint_5.js"></script>
+        <script src="data/Settlements_1.js"></script>
+        <script src="data/BeehiveLocations_0.js"></script>
         <script>
-        var map = L.map('map', {
-            zoomControl:false, maxZoom:28, minZoom:1
-        }).fitBounds([[38.12808066605731,19.86928868960799],[39.12337941294158,22.95988264658685]]);
-        var hash = new L.Hash(map);
-        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
-        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
-        // remove popup's row if "visible-with-data"
-        function removeEmptyRowsFromPopupContent(content, feature) {
-         var tempDiv = document.createElement('div');
-         tempDiv.innerHTML = content;
-         var rows = tempDiv.querySelectorAll('tr');
-         for (var i = 0; i < rows.length; i++) {
-             var td = rows[i].querySelector('td.visible-with-data');
-             var key = td ? td.id : '';
-             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
-                 rows[i].parentNode.removeChild(rows[i]);
-             }
-         }
-         return tempDiv.innerHTML;
-        }
-        // add class to format popup if it contains media
-		function addClassToPopupIfMedia(content, popup) {
-			var tempDiv = document.createElement('div');
-			tempDiv.innerHTML = content;
-			if (tempDiv.querySelector('td img')) {
-				popup._contentNode.classList.add('media');
-					// Delay to force the redraw
-					setTimeout(function() {
-						popup.update();
-					}, 10);
-			} else {
-				popup._contentNode.classList.remove('media');
-			}
-		}
-        var zoomControl = L.control.zoom({
-            position: 'bottomright'
-        }).addTo(map);
-        var bounds_group = new L.featureGroup([]);
-        function setBounds() {
-        }
-        map.createPane('pane_EsriImagery_1');
-        map.getPane('pane_EsriImagery_1').style.zIndex = 401;
-        var layer_EsriImagery_1 = L.tileLayer('https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            pane: 'pane_EsriImagery_1',
-            opacity: 1.0,
-            attribution: '',
-            minZoom: 1,
-            maxZoom: 28,
-        });
-        layer_EsriImagery_1;
-        map.addLayer(layer_EsriImagery_1);
-        map.createPane('pane_AlternativeScenario2_2');
-        map.getPane('pane_AlternativeScenario2_2').style.zIndex = 402;
-        var img_AlternativeScenario2_2 = 'data/AlternativeScenario2_2.png';
-        var img_bounds_AlternativeScenario2_2 = [[38.274212527777074,20.70409374209867],[39.18741530653081,22.037868602323677]];
-        var layer_AlternativeScenario2_2 = new L.imageOverlay(img_AlternativeScenario2_2,
-                                              img_bounds_AlternativeScenario2_2,
-                                              {pane: 'pane_AlternativeScenario2_2'});
-        bounds_group.addLayer(layer_AlternativeScenario2_2);
-        map.addLayer(layer_AlternativeScenario2_2);
-        map.createPane('pane_AlternativeScenario1_3');
-        map.getPane('pane_AlternativeScenario1_3').style.zIndex = 403;
-        var img_AlternativeScenario1_3 = 'data/AlternativeScenario1_3.png';
-        var img_bounds_AlternativeScenario1_3 = [[38.274212527777074,20.70409374209867],[39.18741530653081,22.037868602323677]];
-        var layer_AlternativeScenario1_3 = new L.imageOverlay(img_AlternativeScenario1_3,
-                                              img_bounds_AlternativeScenario1_3,
-                                              {pane: 'pane_AlternativeScenario1_3'});
-        bounds_group.addLayer(layer_AlternativeScenario1_3);
-        map.addLayer(layer_AlternativeScenario1_3);
-        map.createPane('pane_OriginalScenario_4');
-        map.getPane('pane_OriginalScenario_4').style.zIndex = 404;
-        var img_OriginalScenario_4 = 'data/OriginalScenario_4.png';
-        var img_bounds_OriginalScenario_4 = [[38.27425909931495,20.704190625709224],[39.187368905479254,22.03784682681712]];
-        var layer_OriginalScenario_4 = new L.imageOverlay(img_OriginalScenario_4,
-                                              img_bounds_OriginalScenario_4,
-                                              {pane: 'pane_OriginalScenario_4'});
-        bounds_group.addLayer(layer_OriginalScenario_4);
-        map.addLayer(layer_OriginalScenario_4);
-        function pop_MunicipalUnitsPoint_5(feature, layer) {
-            var popupContent = '<table>\
-                    <tr>\
-                        <td colspan="2">' + (feature.properties['full_id'] !== null ? autolinker.link(String(feature.properties['full_id']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
-                    </tr>\
-                    <tr>\
-                        <td colspan="2">' + (feature.properties['name:en'] !== null ? autolinker.link(String(feature.properties['name:en']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
-                    </tr>\
-                    <tr>\
-                        <td colspan="2">' + (feature.properties['name:el'] !== null ? autolinker.link(String(feature.properties['name:el']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
-                    </tr>\
-                    <tr>\
-                        <td colspan="2">' + (feature.properties['admin_level'] !== null ? autolinker.link(String(feature.properties['admin_level']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
-                    </tr>\
-                </table>';
-            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
-			layer.on('popupopen', function(e) {
-				addClassToPopupIfMedia(content, e.popup);
-			});
-			layer.bindPopup(content, { maxHeight: 400 });
-        }
+// ——— 1) Initialize map —————————————————————————————————————
+  var map = L.map('map', {
+    zoomControl: false, minZoom:1, maxZoom:28
+  })
+  .fitBounds([[38.1280807,19.8692887],[39.1233794,22.9598826]])
+  .setZoom(10);
+  L.control.zoom({ position:'bottomright' }).addTo(map);
+  new L.Hash(map);
 
-        function style_MunicipalUnitsPoint_5_0() {
-            return {
-                pane: 'pane_MunicipalUnitsPoint_5',
-                radius: 4.0,
-                opacity: 1,
-                color: 'rgba(0,0,0,1.0)',
-                dashArray: '',
-                lineCap: 'butt',
-                lineJoin: 'miter',
-                weight: 2.0,
-                fill: true,
-                fillOpacity: 1,
-                fillColor: 'rgba(255,255,255,1.0)',
-                interactive: false,
-            }
-        }
-        map.createPane('pane_MunicipalUnitsPoint_5');
-        map.getPane('pane_MunicipalUnitsPoint_5').style.zIndex = 405;
-        map.getPane('pane_MunicipalUnitsPoint_5').style['mix-blend-mode'] = 'normal';
-        var layer_MunicipalUnitsPoint_5 = new L.geoJson(json_MunicipalUnitsPoint_5, {
-            attribution: '',
-            interactive: false,
-            dataVar: 'json_MunicipalUnitsPoint_5',
-            layerName: 'layer_MunicipalUnitsPoint_5',
-            pane: 'pane_MunicipalUnitsPoint_5',
-            onEachFeature: pop_MunicipalUnitsPoint_5,
-            pointToLayer: function (feature, latlng) {
-                var context = {
-                    feature: feature,
-                    variables: {}
-                };
-                return L.circleMarker(latlng, style_MunicipalUnitsPoint_5_0(feature));
-            },
-        });
-        bounds_group.addLayer(layer_MunicipalUnitsPoint_5);
-        map.addLayer(layer_MunicipalUnitsPoint_5);
-        var overlaysTree = [
-            {label: '<img src="legend/MunicipalUnitsPoint_5.png" /> Municipal Units (Point)', layer: layer_MunicipalUnitsPoint_5},
-            {label: "Original Scenario", layer: layer_OriginalScenario_4},
-            {label: "Alternative Scenario 1", layer: layer_AlternativeScenario1_3},
-            {label: "Alternative Scenario 2", layer: layer_AlternativeScenario2_2},
-            {label: "Esri Imagery", layer: layer_EsriImagery_1},]
-        var lay = L.control.layers.tree(null, overlaysTree,{
-            //namedToggle: true,
-            //selectorBack: false,
-            //closedSymbol: '&#8862; &#x1f5c0;',
-            //openedSymbol: '&#8863; &#x1f5c1;',
-            //collapseAll: 'Collapse all',
-            //expandAll: 'Expand all',
-            collapsed: true,
-        });
-        lay.addTo(map);
-        setBounds();
-        var i = 0;
-        layer_MunicipalUnitsPoint_5.eachLayer(function(layer) {
-            var context = {
-                feature: layer.feature,
-                variables: {}
-            };
-            layer.bindTooltip((layer.feature.properties['name:en'] !== null?String('<div style="color: #323232; font-size: 8pt; font-family: \'Bahnschrift SemiLight\', sans-serif;">' + layer.feature.properties['name:en']) + '</div>':''), {permanent: true, offset: [-0, -16], className: 'css_MunicipalUnitsPoint_5'});
-            labels.push(layer);
-            totalMarkers += 1;
-              layer.added = true;
-              addLabel(layer, i);
-              i++;
-        });
-        L.ImageOverlay.include({
-            getBounds: function () {
-                return this._bounds;
-            }
-        });
-        resetLabels([layer_MunicipalUnitsPoint_5]);
-        map.on("zoomend", function(){
-            resetLabels([layer_MunicipalUnitsPoint_5]);
-        });
-        map.on("layeradd", function(){
-            resetLabels([layer_MunicipalUnitsPoint_5]);
-        });
-        map.on("layerremove", function(){
-            resetLabels([layer_MunicipalUnitsPoint_5]);
-        });
-        </script>
-    
+  // ——— 2) Basemaps —————————————————————————————————————————
+  var esriDark = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    { attribution:'Tiles © Esri — Esri Dark Gray' }
+  );
+  var esriImagery = L.tileLayer(
+    'https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { attribution:'' }
+  ).addTo(map);
+
+  // ——— 3) Scenario overlays ——————————————————————————————————
+  var orig = L.imageOverlay('data/OriginalScenario_4.png',
+    [[38.2742591,20.7041906],[39.1873689,22.0378468]]
+  );
+  var alt1 = L.imageOverlay('data/AlternativeScenario1_3.png',
+    [[38.2742125,20.7040937],[39.1874153,22.0378686]]
+  );
+  var alt2 = L.imageOverlay('data/AlternativeScenario2_2.png',
+    [[38.2742125,20.7040937],[39.1874153,22.0378686]]
+  );
+  // show only Original at start
+  orig.addTo(map);
+
+  // ——— 4) Point layers (permanent labels, no popups) ——————————
+  var settlements = L.geoJson(json_Settlements_1, {
+    interactive: false,
+    pointToLayer: function(f,latlng){
+      return L.circleMarker(latlng,{
+        radius:4, fill:true, fillColor:'#fff',
+        color:'#000', weight:1
+      });
+    }
+  }).addTo(map);
+
+  var beehiveIcon = L.icon({
+    iconUrl:'images/BeehiveLocations_0.png',
+    iconSize:[32,32], iconAnchor:[16,16]
+  });
+  var beehives = L.geoJson(json_BeehiveLocations_0, {
+    interactive: false,
+    pointToLayer:function(f,latlng){
+      return L.marker(latlng,{icon:beehiveIcon});
+    }
+  }).addTo(map);
+
+  // permanent labels via labels.js
+  var idx = 0;
+  settlements.eachLayer(function(l){
+    var t = l.feature.properties['name:alt'] || '';
+    if(!t) return;
+    l.bindTooltip(
+      '<div style="font-family:Lato,sans-serif;font-size:10pt;font-weight:bold;'+
+      'color:#323232;text-shadow:-0.2px -0.2px 0 #fff,0.2px -0.2px 0 #fff,0.2px 0.2px 0 #fff;">'
+      + t + '</div>',
+      { permanent:true, direction:'top', offset:[0,0] }
+    );
+    l.added = true; addLabel(l, idx++);
+  });
+  beehives.eachLayer(function(l){
+    var t = l.feature.properties['Perioxi'] || '';
+    if(!t) return;
+    l.bindTooltip(
+      '<div style="font-family:Lato,sans-serif;font-size:10pt;font-weight:bold;'+
+      'color:#323232;text-shadow:-0.2px -0.2px 0 #ff0,0.2px -0.2px 0 #ff0,0.2px 0.2px 0 #ff0;">'
+      + t + '</div>',
+      { permanent:true, direction:'bottom', offset:[0,5] }
+    );
+    l.added = true; addLabel(l, idx++);
+  });
+  resetLabels([settlements, beehives]);
+  map.on('zoomend layeradd layerremove', function(){
+    resetLabels([settlements, beehives]);
+  });
+
+  // ——— 5) Layer control with icons ——————————————————————————
+  var baseMaps = {
+    "Esri Dark Gray": esriDark,
+    "Esri Imagery":   esriImagery
+  };
+  var overlays = {
+  '<img src="legend/MunicipalUnitsPoint_5.png" width="30" height="30" style="vertical-align:middle; margin-top:-6px; margin-right:4px;" /> Settlements':       settlements,
+  '<img src="legend/BeehiveLocations_0.png" width="30" height="30" style="vertical-align:middle; margin-top:-6px; margin-right:4px;" /> Beehive Locations': beehives,
+  '<img src="legend/OriginalScenario_4.png"      width="16" height="16" style="vertical-align:middle; margin-right:4px;" /> Original Scenario':      orig,
+  '<img src="legend/AlternativeScenario1_3.png" width="16" height="16" style="vertical-align:middle; margin-right:4px;" /> Alternative Scenario 1': alt1,
+  '<img src="legend/AlternativeScenario2_2.png" width="16" height="16" style="vertical-align:middle; margin-right:4px;" /> Alternative Scenario 2': alt2
+  };
+  L.control.layers(baseMaps, overlays, { collapsed:true }).addTo(map);
+  </script>
+   <!-- 1) Toggle button first -->
     <div id="sidebarToggleBtn">☰</div>
-<div id="leftSidebar">
+	<!-- 2) Sidebar starts closed -->
+<div id="leftSidebar" class="collapsed">
   <div class="tabs">
     <button class="tab-button active" data-tab="general">General</button>
     <button class="tab-button" data-tab="explanation">Explanation</button>
@@ -463,8 +331,8 @@
   <div class="tab-content active" id="general">
     <div style="text-align: justify;">
       <h3>General Info</h3>
-      <p>This interactive web map was created as part of a Diploma Thesis submitted to the <strong>National Technical University of Athens (NTUA)</strong>, School of Rural, Surveying and Geoinformatics Engineering.</p>
-      <p>The thesis focuses on determining the most suitable areas for beekeeping activities in the Regional Unit of Aitoloakarnania, Greece, using geospatial analysis and multi-criteria evaluation techniques.</p>
+      <p>This interactive web map was created as part of a Master Thesis submitted to the <strong>National Technical University of Athens (NTUA)</strong>, School of Rural, Surveying and Geoinformatics Engineering.</p>
+      <p>The study focuses on determining the most suitable areas for beekeeping activities in the Regional Unit of Aitoloakarnania, Greece, using geospatial analysis and multi-criteria evaluation techniques.</p>
     </div>
     <div style="text-align: center; margin-top: 40px;">
       <img src="ntua-logo.png" alt="NTUA Logo" style="max-width: 200px; width: 75%;">
@@ -472,8 +340,8 @@
     <div style="text-align: center;">
       <p><strong>NATIONAL TECHNICAL UNIVERSITY OF ATHENS</strong></p>
       <p><strong>Master of Science (MSc) in Geoinformatics</strong></p>
-      <p><em>Diploma Thesis:</em><br>
-      <em>Beekeeping Suitability Assessment in Regional Unit of Aitoloakarnania, Greece</em></p>
+      <p><em>Master Thesis:</em><br>
+      <em>Multi-Criteria Geospatial Analysis and Web-Based Application for Identifying Suitable Areas for Beekeeping in Aitoloakarnania, Greece</em></p>
       <p>Lampros Syrakos</p>
       <p>Athens, 2025</p>
     </div>
@@ -482,48 +350,96 @@
   <!-- EXPLANATION TAB -->
   <div class="tab-content" id="explanation">
     <div style="text-align: justify;">
+	<!-- 1) Introduction -->
+  <h3>Introduction</h3>
+  <p>
+   In this study, a GIS-based multi-criteria evaluation was employed to delineate areas suitable for beekeeping within Aitoloakarnania. The analysis incorporated several geospatial layers, including vegetation indices, slope models, temperature rasters, road proximity, and settlement proximity. Subsequently, the Analytic Hierarchy Process (AHP) was utilized to determine the weights for each criterion through a series of pairwise comparisons and consistency checks.
+  </p>
+  <!-- 2) Scenario Explanation -->
     <h3>Scenario Explanation</h3>
     <p><strong>Original Scenario</strong>:<br>
     This scenario represents the standard suitability model where <strong>vegetation</strong> is prioritized the most (weight: 0.40), reflecting the critical role of floral resources in beekeeping. <strong>Slope</strong> follows (0.25), as accessibility and terrain affect hive placement and apiary management. <strong>Temperature</strong> (0.15) ensures a favorable microclimate for bee activity. <strong>Road network</strong> and <strong>proximity to settlements</strong> are given equal lesser importance (0.10 each), mainly for logistical support.</p>
 
     <p><strong>Alternative Scenario 1 – Temperature Emphasis</strong>:<br>
-    This scenario gives primary importance to <strong>temperature</strong> (0.45), ideal for identifying areas with optimal climatic conditions for year-round bee activity and hive survival. <strong>Vegetation</strong> and <strong>slope</strong> are moderately weighted (0.20 and 0.15), while <strong>road network</strong> and <strong>settlements</strong> maintain minimal but equal influence (0.10 each).</p>
+    This scenario gives primary importance to <strong>temperature</strong> (0.45), ideal for identifying areas with optimal climatic conditions for year-round bee activity and hive survival. <strong>Vegetation</strong> and <strong>slope</strong> are moderately weighted (0.25 and 0.15), while <strong>road network</strong> and <strong>settlements</strong> maintain minimal but equal influence (0.10 and 0.05 respectively).</p>
 
     <p><strong>Alternative Scenario 2 – Accessibility Emphasis</strong>:<br>
     Focused on <strong>accessibility</strong>, this scenario heavily weights both <strong>proximity to the road network</strong> and <strong>settlements</strong> at 0.35 each. This approach favors areas that can be easily reached for maintenance and honey transport. <strong>Vegetation</strong>, <strong>slope</strong>, and <strong>temperature</strong> are considered secondary, each with a weight of 0.10, ensuring they are still factored into the analysis but with reduced priority.</p>
-  </div>
-
-  <!-- CONCLUSIONS TAB -->
-  <div class="tab-content" id="conclusions">
-    <div style="text-align: justify;">
-    <h3>Conclusions</h3>
-    <p>The multi-criteria evaluation approach applied here demonstrates the importance of integrating environmental and infrastructural parameters to assess the suitability of locations for beekeeping.</p>
-    <p>Users can visually compare different suitability scenarios and better understand spatial decision-making through this interactive tool.</p>
+	<!-- 3) Local Beekeepers Validation -->
+  <h3>Local Beekeepers Validation</h3>
+  <p>
+    To ground-truth the model, experienced beekeepers in the region were consulted. They provided the approximate locations of their existing apiaries, which were subsequently overlaid onto the generated suitability maps. Their feedback confirmed a close alignment between the highest-suitability zones and traditional hive sites, thereby instilling confidence in the weighted criteria.
+  </p>  
   </div>
 </div>
-    
-
+    <!-- CONCLUSIONS TAB -->
+  <div class="tab-content" id="conclusions">
+    <div style="text-align: justify;">
+      <h3 style="text-align: justify;">Conclusions</h3>
+      <p style="text-align: justify;">
+        The multi-criteria evaluation demonstrated that weighting key factors (vegetation, slope, temperature,
+        road network and settlements) drives very different suitable areas for beekeeping. In particular:
+      </p>
+      <ul style="text-align: justify; margin-left: 20px;">
+        <li style="text-align: justify;">
+          <strong>Original Scenario</strong> (vegetation-first) highlights large, continuous forested zones near
+          riparian corridors.
+        </li>
+        <li style="text-align: justify;">
+          <strong>Alternative Scenario 1</strong> (temperature-driven) shifts suitability toward lower-altitude
+          valleys with milder microclimates.
+        </li>
+        <li style="text-align: justify;">
+          <strong>Alternative Scenario 2</strong> (accessibility-focused) picks sites adjacent to major roads
+          and towns—even where floral cover is thinner.
+        </li>
+      </ul>
+      <p style="text-align: justify;">
+        By toggling between them you can see how each management goal (forage vs. climate vs. logistics) pulls
+        your apiary locations in different directions.
+      </p>
+	</div>
+      <!-- your pre-made chart/graphic -->
+      <div style="text-align: center; margin-top: 20px;">
+        <img
+          src="images/SuitabilityComparison.png"
+          alt="Comparison of suitability scores across scenarios"
+          style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);"
+        />
+        <p style="font-size: 12px; color: #666; margin-top: 8px; text-align: center;">
+          Figure: Comaprison of area (ha) of each class for each suitability scenario
+        </p>
+	</div>
+</div>
+</div>
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const sidebar = document.getElementById("leftSidebar");
-    const toggleBtn = document.getElementById("sidebarToggleBtn");
-    const tabButtons = document.querySelectorAll(".tab-button");
-    const tabContents = document.querySelectorAll(".tab-content");
+    document.addEventListener("DOMContentLoaded", function () {
+      const sidebar    = document.getElementById("leftSidebar");
+      const toggleBtn  = document.getElementById("sidebarToggleBtn");
+      const tabButtons = document.querySelectorAll(".tab-button");
+      const tabContents= document.querySelectorAll(".tab-content");
 
-    toggleBtn.addEventListener("click", () => {
-      sidebar.classList.toggle("collapsed");
-    });
+      // Sidebar toggle + button reposition
+      toggleBtn.addEventListener("click", () => {
+        sidebar.classList.toggle("collapsed");
+        toggleBtn.style.left = sidebar.classList.contains("collapsed")
+          ? "15px"    // closed
+          : "435px";  // open 
+      });
 
-    tabButtons.forEach(button => {
-      button.addEventListener("click", () => {
-        tabButtons.forEach(btn => btn.classList.remove("active"));
-        tabContents.forEach(tab => tab.classList.remove("active"));
-        button.classList.add("active");
-        document.getElementById(button.dataset.tab).classList.add("active");
+      // Tab switching
+      tabButtons.forEach(button => {
+        button.addEventListener("click", () => {
+          // deactivate all
+          tabButtons.forEach(b=>b.classList.remove("active"));
+          tabContents.forEach(c=>c.classList.remove("active"));
+          // activate clicked + its panel
+          button.classList.add("active");
+          document.getElementById(button.dataset.tab).classList.add("active");
+        });
       });
     });
-  });
-</script>
+  </script>
 
 </body>
 </html>
